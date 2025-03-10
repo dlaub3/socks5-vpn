@@ -1,0 +1,50 @@
+services:
+  ovpn:
+    build:
+      context: .
+      dockerfile: Dockerfile.ovpn
+    container_name: ovpn
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ./vpn:/vpn:z
+    environment:
+      - VPN_CONFIG_FILE=config.ovpn
+    restart: unless-stopped # no, always, unless-stopped, on-failure, on-failure:3
+    healthcheck:
+      # because dante interpreting `tun0` as a hostname is _really_ hard to debug
+      test: ["CMD", "ping", "-c", "1", "1.1.1.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      vpn-network:
+      dns:
+        aliases:
+          - gateway.docker
+
+  dante:
+    build:
+      context: .
+      dockerfile: Dockerfile.dante
+    container_name: dante
+    volumes:
+      - ./dante:/dante/:z
+    environment:
+      - DANTE_CONFIG_FILE=danted.conf
+    depends_on:
+      ovpn:
+        # because dante interpreting `tun0` as a hostname is _really_ hard to debug
+        condition: service_healthy
+    restart: unless-stopped # no, always, unless-stopped, on-failure, on-failure:3
+    network_mode: "service:ovpn"
+
+networks:
+  vpn-network:
+    driver: bridge
+  dns:
+    external: true

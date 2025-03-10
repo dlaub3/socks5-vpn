@@ -1,0 +1,28 @@
+FROM alpine:3.18
+
+# Install Dante SOCKS proxy and SSL tools
+RUN apk add --no-cache \
+    dante-server \
+    bash \
+    curl \
+    iptables \
+    openssl
+
+# Create directory for certificates
+RUN mkdir -p /etc/sockd/certs
+
+# Generate self-signed certificate (for testing - replace with proper certs in production)
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/sockd/certs/sockd.key \
+    -out /etc/sockd/certs/sockd.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=sockd.local"
+
+# Expose SOCKS5 proxy port
+EXPOSE 1080
+
+# Copy entrypoint script
+COPY socks-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Run SOCKS proxy
+ENTRYPOINT ["/entrypoint.sh"]
