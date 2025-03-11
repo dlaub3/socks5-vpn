@@ -13,5 +13,18 @@ If you use https://github.com/dlaub3/bloody-tears-of-dns-madness you'll be able 
 
 Otherwise you'll likely want to add a host port mapping to docker-compose.yaml
 
-https://ifconfig.me
-https://dnsleaktest.com
+## Configuration
+
+Add add your `config.ovpn` and `auth.txt` files to `ovpn/config`. Ensure that `config.ovpn` sets
+`auth-user-pass /ovpn/auth.txt`.
+
+The format for `auth.txt` is:
+
+```
+username
+password
+```
+
+
+- https://ifconfig.me
+- https://dnsleaktest.com
