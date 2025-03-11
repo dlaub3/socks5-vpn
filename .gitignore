@@ -1,2 +1,3 @@
-vpn/auth.txt
-vpn/config.ovpn
+auth.txt
+config.ovpn
+users.txt

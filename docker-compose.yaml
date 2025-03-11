@@ -1,7 +1,7 @@
 services:
   ovpn:
     build:
-      context: .
+      context: ./ovpn
       dockerfile: Dockerfile.ovpn
     container_name: ovpn
     sysctls:
@@ -11,9 +11,9 @@ services:
     devices:
       - /dev/net/tun
     volumes:
-      - ./vpn:/vpn:z
+      - ./ovpn/config:/ovpn:z
     environment:
-      - VPN_CONFIG_FILE=config.ovpn
+      - VPN_CONFIG_FILE=/ovpn/config.ovpn
     restart: unless-stopped # no, always, unless-stopped, on-failure, on-failure:3
     healthcheck:
       # because dante interpreting `tun0` as a hostname is _really_ hard to debug
@@ -29,13 +29,13 @@ services:
 
   dante:
     build:
-      context: .
+      context: ./dante
       dockerfile: Dockerfile.dante
     container_name: dante
     volumes:
-      - ./dante:/dante/:z
+      - ./dante/config:/dante:z
     environment:
-      - DANTE_CONFIG_FILE=danted.conf
+      - DANTE_CONFIG_FILE=/dante/danted.conf
     depends_on:
       ovpn:
         # because dante interpreting `tun0` as a hostname is _really_ hard to debug
